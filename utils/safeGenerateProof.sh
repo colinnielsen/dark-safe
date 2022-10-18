@@ -8,12 +8,22 @@
 printf "Name of your build : "
 read name_build
 
-cd circuits/
-printf "\n#################\n\n"
-nargo build
-printf "\n#################\n\n"
-nargo compile ${name_build}
-printf "\n#################\n\n"
+printf "message to sign : "
+read message
 
-cd ..
-npx ts-node scripts/generateProof.ts ${name_build}
+cd circuits/
+
+printf "\n💻 nargo build 💻\n\n"
+nargo build
+
+printf "\n💻 nargo compile 💻\n\n"
+nargo compile ${name_build}
+
+printf "\n💻 generateSigProof script 💻\n\n"
+npx ts-node ../scripts/generateProof.ts ${message} ${name_build}
+
+printf "\n💻 nargo prove 💻\n\n"
+nargo prove ${name_build}
+
+printf "\n💻 nargo verify 💻\n\n"
+nargo verify ${name_build}
