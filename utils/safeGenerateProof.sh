@@ -5,15 +5,15 @@
 # If Prover.toml is malformed, it will still generate the proof using the last valid build.
 #
 
-printf "Name of your build : "
+printf "Name your build file : "
 read name_build
 
-printf "message to sign : "
+printf "Message to sign 🖊 : "
 read message
 
 echo "How do you wish to compile?"
-select yn in "Nargo" "WASM"; do
-    case $yn in
+select pipeline in "Nargo" "WASM"; do
+    case $pipeline in
     Nargo)
         pipeline="Nargo"
         break
