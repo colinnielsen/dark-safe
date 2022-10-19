@@ -11,6 +11,20 @@ read name_build
 printf "message to sign : "
 read message
 
+echo "How do you wish to compile?"
+select yn in "Nargo" "WASM"; do
+    case $yn in
+    Nargo)
+        pipeline="Nargo"
+        break
+        ;;
+    WASM)
+        pipeline="WASM"
+        break
+        ;;
+    esac
+done
+
 cd circuits/
 
 printf "\n💻 nargo build 💻\n\n"
@@ -20,10 +34,12 @@ printf "\n💻 nargo compile 💻\n\n"
 nargo compile ${name_build}
 
 printf "\n💻 generateSigProof script 💻\n\n"
-npx ts-node ../scripts/generateProof.ts ${message} ${name_build}
+npx ts-node ../scripts/generateProof.ts ${pipeline} ${name_build} ${message}
 
-printf "\n💻 nargo prove 💻\n\n"
-nargo prove ${name_build}
+if [ $pipeline = "Nargo" ]; then
+    printf "\n💻 nargo prove 💻\n\n"
+    nargo prove ${name_build}
 
-printf "\n💻 nargo verify 💻\n\n"
-nargo verify ${name_build}
+    printf "\n💻 nargo verify 💻\n\n"
+    nargo verify ${name_build}
+fi
