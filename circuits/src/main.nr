@@ -26,6 +26,6 @@ fn main(
   // for i in 0..20 {
   //   recipientAddress[i] = pubKeyHash[i + 12];
   // };
-  // let withdrawl_hash = std::hash::pedersen(recipientAddress, payrollContractAddress);
+  // let withdrawl_hash = std::hash::pedersen(publicKeyX, publicKeyY, payrollContractAddress);
   // constrain withdraw_hash == withdraw_key;
 }

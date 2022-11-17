@@ -82,12 +82,12 @@ async function main() {
   const message = process.argv.slice(4).join(" ");
 
   // hardhat wallet 0
-  const wallet = new ethers.Wallet(
+  const sender = new ethers.Wallet(
     "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
   );
 
   console.log("\x1b[34m%s\x1b[0m", "signing message 🖋: ", message);
-  const signature = await wallet.signMessage(message); // get the signature of the message, this will be 130 bytes (r, s, and v)
+  const signature = await sender.signMessage(message); // get the signature of the message, this will be 130 bytes (r, s, and v)
   console.log("\x1b[34m%s\x1b[0m", "signature 📝: ", signature);
 
   const digest = ethers.utils.hashMessage(message); // this hash digest of the message as defined in EIP -
