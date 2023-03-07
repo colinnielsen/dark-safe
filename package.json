@@ -31,8 +31,8 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
-    "@noir-lang/aztec_backend": "^0.12.0",
+    "@noir-lang/aztec_backend": "^0.11.0",
     "@noir-lang/barretenberg": "^2.19.0",
-    "@noir-lang/noir_wasm": "0.2.0-ca986a4"
+    "@noir-lang/noir_wasm": "^0.10.0"
   }
 }
