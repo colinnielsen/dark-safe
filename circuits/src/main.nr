@@ -9,20 +9,21 @@ fn main(
   hashedMessage: pub [u8; 32]
   // payrollContractAddress: pub Field,
   // withdrawal_key: pub Field
-) -> pub [u8; 64] {
+) -> pub [u64; 4] { // return address
   let isValid = std::ecdsa_secp256k1::verify_signature(publicKeyX, publicKeyY, signature, hashedMessage);
   constrain isValid == 1;
-  let mut pub_key: [u8; 64] = [0; 64];
+  let mut pub_key: [u64; 16] = [0; 16];
 
   for i in 0..64 {
+    let mut key_index = i / 4;
     if i < 32 {
-        pub_key[i] = publicKeyX[i];
+        pub_key[key_index] = pub_key[key_index] << publicKeyX[i] as u64;
     } else {
-        pub_key[i] = publicKeyY[i - 32];
+        pub_key[key_index] = pub_key[key_index] << publicKeyY[i - 32] as u64;
     }
   };
 
-  keccak::keccak(pub_key, 32)
+  keccak::keccak(pub_key, 64)
   // let mut pubKey: [u8; 64] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
   // for i in 0..64 {
