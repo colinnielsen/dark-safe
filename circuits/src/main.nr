@@ -1,4 +1,6 @@
 use dep::std;
+use dep::keccak;
+use dep::keccak::constants;
 
 fn main(
   publicKeyX: [u8; 32],
@@ -7,10 +9,20 @@ fn main(
   hashedMessage: pub [u8; 32]
   // payrollContractAddress: pub Field,
   // withdrawal_key: pub Field
-) {
+) -> pub [u8; 64] {
   let isValid = std::ecdsa_secp256k1::verify_signature(publicKeyX, publicKeyY, signature, hashedMessage);
   constrain isValid == 1;
-  
+  let mut pub_key: [u8; 64] = [0; 64];
+
+  for i in 0..64 {
+    if i < 32 {
+        pub_key[i] = publicKeyX[i];
+    } else {
+        pub_key[i] = publicKeyY[i - 32];
+    }
+  };
+
+  keccak::keccak(pub_key, 32)
   // let mut pubKey: [u8; 64] = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
 
   // for i in 0..64 {
