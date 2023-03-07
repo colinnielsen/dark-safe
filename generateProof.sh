@@ -34,7 +34,7 @@ printf "\n💻 nargo compile 💻\n\n"
 nargo compile ${name_build}
 
 printf "\n💻 generateSigProof script 💻\n\n"
-npx ts-node ../scripts/generateProof.ts ${pipeline} ${name_build} ${message}
+npx ts-node ../node-scripts/generateProof.ts ${pipeline} ${name_build} ${message}
 
 if [ $pipeline = "Nargo" ]; then
     printf "\n💻 nargo prove 💻\n\n"

@@ -16,7 +16,7 @@ function path_to_uint8array(path: string) {
 const hexToUint8Array = (hex: string) =>
   Uint8Array.from(Buffer.from(hex, "hex"));
 
-const buildNargoOutputs = (
+const compileWithNargo = (
   publicKeyX: string, // these are all hex strings
   publicKeyY: string,
   signature: string,
@@ -100,7 +100,7 @@ async function main() {
   console.log("\x1b[34m%s\x1b[0m", "public key y coordinate 📊: ", publicKeyY);
 
   // build based on cli input
-  if (useNargo) buildNargoOutputs(publicKeyX, publicKeyY, signature, digest);
+  if (useNargo) compileWithNargo(publicKeyX, publicKeyY, signature, digest);
   else await compileWithWasm(build, publicKeyX, publicKeyY, signature, digest);
 }
 
