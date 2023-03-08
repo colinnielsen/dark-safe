@@ -4,3 +4,7 @@
 [submodule "lib/solmate"]
 	path = lib/solmate
 	url = https://github.com/transmissions11/solmate
+[submodule "lib/zodiac"]
+	path = lib/zodiac
+	url = https://github.com/gnosis/zodiac
+	branch = v3.2.0

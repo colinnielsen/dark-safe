@@ -31,6 +31,7 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
+    "@gnosis.pm/zodiac": "^3.2.0",
     "@noir-lang/aztec_backend": "^0.11.0",
     "@noir-lang/barretenberg": "^2.19.0",
     "@noir-lang/noir_wasm": "^0.10.0"

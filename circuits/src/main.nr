@@ -50,15 +50,28 @@ fn test_merge_pub_key_to_u64() {
 //   keccak::keccak(pub_key, input_length)
 // }
 
-fn main(
-  pub_key_x: [u8; 32],
-  pub_key_y: [u8; 32],
-  signature: [u8; 64], // clip v value
-  hashed_message: pub [u8; 32]
-) -> pub [u64; 4] { // return hashed address
-  let isValid = std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
-  constrain isValid == 1;
+// fn main(
+//   pub_key_x: [u8; 32],
+//   pub_key_y: [u8; 32],
+//   signature: [u8; 64], // clip v value
+//   hashed_message: pub [u8; 32]
+// ) -> pub [u64; 4] { // return hashed address
+//   let isValid = std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
+//   constrain isValid == 1;
 
-  let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
-  keccak::keccak(pub_key, 16)
-}
+//   let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
+//   keccak::keccak(pub_key, 16)
+// }
+
+
+// __mind map__
+// the private module signers are stored publicly the merkle root on the DarkSafe contract
+
+// this circuit will:
+// forEach signer:
+//    1. verify the signature
+//    2. verify the signer exists is in the merkle root
+//    3. constrain the address to be the same as the signer
+//    (Safe duplicate signer check)
+//    4. contstrain the previous address to be greater than the current address
+//    5. memoize the address as Field 
