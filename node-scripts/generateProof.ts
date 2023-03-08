@@ -17,18 +17,18 @@ const hexToUint8Array = (hex: string) =>
   Uint8Array.from(Buffer.from(hex, "hex"));
 
 const compileWithNargo = (
-  publicKeyX: string, // these are all hex strings
-  publicKeyY: string,
+  pub_key_x: string, // these are all hex strings
+  pub_key_y: string,
   signature: string,
-  hashedMessage: string
+  hashed_message: string
 ) => {
   const abi = {
-    publicKeyX: hexToUint8Array(publicKeyX),
-    publicKeyY: hexToUint8Array(publicKeyY),
+    pub_key_x: hexToUint8Array(pub_key_x),
+    pub_key_y: hexToUint8Array(pub_key_y),
     signature: Uint8Array.from(
       Buffer.from(signature.slice(2).slice(0, 128), "hex")
     ),
-    hashedMessage: hexToUint8Array(hashedMessage.slice(2)),
+    hashed_message: hexToUint8Array(hashed_message.slice(2)),
   };
 
   console.log("\x1b[35m%s\x1b[0m", "Writing to Prover/Verifier.toml: ");
@@ -36,19 +36,19 @@ const compileWithNargo = (
     console.log("\x1b[33m%s\x1b[0m", key, value.toString());
   });
 
-  const proverToml = `publicKeyX = [${abi.publicKeyX}]\npublicKeyY = [${abi.publicKeyY}]\nsignature = [${abi.signature}]\nhashedMessage = [${abi.hashedMessage}]`;
+  const proverToml = `pub_key_x = [${abi.pub_key_x}]\npub_key_y = [${abi.pub_key_y}]\nsignature = [${abi.signature}]\nhashed_message = [${abi.hashed_message}]`;
 
-  const verifierToml = `hashedMessage = [${abi.hashedMessage}]\nsetpub = []`;
+  const verifierToml = `hashed_message = [${abi.hashed_message}]\nsetpub = []`;
   fs.writeFileSync("Prover.toml", proverToml);
   fs.writeFileSync("Verifier.toml", verifierToml);
 };
 
 const compileWithWasm = async (
   buildName: string,
-  publicKeyX: string, // these are all hex strings
-  publicKeyY: string,
+  pub_key_x: string, // these are all hex strings
+  pub_key_y: string,
   signature: string,
-  hashedMessage: string
+  hashed_message: string
 ) => {
   let acir = acir_from_bytes(
     path_to_uint8array(
@@ -59,10 +59,10 @@ const compileWithWasm = async (
 
   console.log("Proof inputs:");
   const inputs = [
-    "0x" + publicKeyX,
-    "0x" + publicKeyY,
+    "0x" + pub_key_x,
+    "0x" + pub_key_y,
     signature.slice(0, -2), // slice off the V value
-    hashedMessage,
+    hashed_message,
   ];
 
   console.log(inputs);
@@ -94,14 +94,14 @@ async function main() {
 
   // recoverPublicKey returns `0x{hex"4"}{pubKeyXCoord}{pubKeyYCoord}` - so slice 0x04 to expose just the concatenated x and y
   let pubKey = ethers.utils.recoverPublicKey(digest, signature).slice(4);
-  let publicKeyX = pubKey.substring(0, 64);
-  let publicKeyY = pubKey.substring(64);
-  console.log("\x1b[34m%s\x1b[0m", "public key x coordinate 📊: ", publicKeyX);
-  console.log("\x1b[34m%s\x1b[0m", "public key y coordinate 📊: ", publicKeyY);
+  let pub_key_x = pubKey.substring(0, 64);
+  let pub_key_y = pubKey.substring(64);
+  console.log("\x1b[34m%s\x1b[0m", "public key x coordinate 📊: ", pub_key_x);
+  console.log("\x1b[34m%s\x1b[0m", "public key y coordinate 📊: ", pub_key_y);
 
   // build based on cli input
-  if (useNargo) compileWithNargo(publicKeyX, publicKeyY, signature, digest);
-  else await compileWithWasm(build, publicKeyX, publicKeyY, signature, digest);
+  if (useNargo) compileWithNargo(pub_key_x, pub_key_y, signature, digest);
+  else await compileWithWasm(build, pub_key_x, pub_key_y, signature, digest);
 }
 
 main()

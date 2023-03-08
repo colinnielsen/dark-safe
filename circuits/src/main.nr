@@ -56,7 +56,7 @@ fn main(
   signature: [u8; 64], // clip v value
   hashed_message: pub [u8; 32]
 ) -> pub [u64; 4] { // return hashed address
-  let isValid = std::ecdsa_secp256k1::verify_signature(publicKeyX, publicKeyY, signature, hashed_message);
+  let isValid = std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
   constrain isValid == 1;
 
   let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
