@@ -45,23 +45,23 @@ fn test_merge_pub_key_to_u64() {
   constrain pub_key[7] == 4374419157413398536;
 }
 
-// fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], input_length: u64) -> pub [u64; 4] {
-//   let pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
-//   keccak::keccak(pub_key, input_length)
-// }
+fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], input_length: u64) -> pub [u64; 4] {
+  let pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
+  keccak::keccak(pub_key, input_length)
+}
 
-// fn main(
-//   pub_key_x: [u8; 32],
-//   pub_key_y: [u8; 32],
-//   signature: [u8; 64], // clip v value
-//   hashed_message: pub [u8; 32]
-// ) -> pub [u64; 4] { // return hashed address
-//   let isValid = std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
-//   constrain isValid == 1;
+fn main(
+  pub_key_x: [u8; 32],
+  pub_key_y: [u8; 32],
+  signature: [u8; 64], // clip v value
+  hashed_message: pub [u8; 32]
+) -> pub [u64; 4] { // return hashed address
+  let isValid = std::ecdsa_secp256k1::verify_signature(pub_key_x, pub_key_y, signature, hashed_message);
+  constrain isValid == 1;
 
-//   let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
-//   keccak::keccak(pub_key, 16)
-// }
+  let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
+  keccak::keccak(pub_key, 16)
+}
 
 
 // __mind map__
