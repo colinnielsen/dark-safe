@@ -56,7 +56,7 @@ fn main(
   constrain isValid == 1;
 
   let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
-  // todo: figure out the correct way to return the hashed arress
+  // todo: truncate the last 20 bytes and figure out a reasonable data structure for the ethereum address
   keccak::keccak(pub_key, 16)
 }
 
