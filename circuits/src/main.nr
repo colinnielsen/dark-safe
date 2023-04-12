@@ -45,11 +45,12 @@ fn test_merge_pub_key_to_u64() {
   constrain pub_key[7] == 4374419157413398536;
 }
 
-fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], input_length: u64) -> pub [u64; 4] {
-  let pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
-  keccak::keccak(pub_key, input_length)
-}
+// fn main(pub_key_x: [u8; 32], pub_key_y: [u8; 32], input_length: u64) -> pub [u64; 4] {
+//   let pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
+//   keccak::keccak(pub_key, input_length)
+// }
 
+// verifies a signature and returns the ethereum address
 fn main(
   pub_key_x: [u8; 32],
   pub_key_y: [u8; 32],
@@ -60,6 +61,7 @@ fn main(
   constrain isValid == 1;
 
   let mut pub_key = merge_pub_key_to_u64(pub_key_x, pub_key_y);
+  // todo: figure out the correct way to return the hashed arress
   keccak::keccak(pub_key, 16)
 }
 
