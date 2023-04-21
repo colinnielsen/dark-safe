@@ -1,7 +1,7 @@
 {
-  "name": "nplate",
+  "name": "dark-safe",
   "version": "1.0.0",
-  "description": "A template for noir.",
+  "description": "Multi-sig verification in zero knowledge",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
