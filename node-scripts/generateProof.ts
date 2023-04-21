@@ -85,15 +85,15 @@ async function main() {
   const sender = new ethers.Wallet(
     "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
   );
+  const digest = ethers.utils.hashMessage(message); // this hash digest of the message as defined in EIP -
 
   console.log("\x1b[34m%s\x1b[0m", "signing message 🖋: ", message);
   const signature = await sender.signMessage(message); // get the signature of the message, this will be 130 bytes (r, s, and v)
   console.log("\x1b[34m%s\x1b[0m", "signature 📝: ", signature);
 
-  const digest = ethers.utils.hashMessage(message); // this hash digest of the message as defined in EIP -
-
   // recoverPublicKey returns `0x{hex"4"}{pubKeyXCoord}{pubKeyYCoord}` - so slice 0x04 to expose just the concatenated x and y
   let pubKey = ethers.utils.recoverPublicKey(digest, signature).slice(4);
+  console.log("entire pub key ", pubKey);
   let pub_key_x = pubKey.substring(0, 64);
   let pub_key_y = pubKey.substring(64);
   console.log("\x1b[34m%s\x1b[0m", "public key x coordinate 📊: ", pub_key_x);
