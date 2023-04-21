@@ -1,6 +1,0 @@
-[package]
-authors = ["@colinnielsen"]
-compiler_version = "0.1"
-
-[dependencies]
-keccak = { path = "lib" }
