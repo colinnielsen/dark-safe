@@ -10,8 +10,8 @@ fn main(
     // threshold: pub Field,
     safe_message_hash: pub [u8; 32]
 ) {
-    // constrain threshold < 8;
-    constrain pub_keys.len() == signatures.len();
+    // assert(threshold < 8);
+    assert(pub_keys.len() == signatures.len());
 
     let mut addrs: [Field; SIGNER_COUNT] = [0; SIGNER_COUNT];
 
@@ -23,7 +23,7 @@ fn main(
             safe_message_hash
         );
 
-        // constrain prevAddr <= recovered_addr;
+        // assert(prevAddr <= recovered_addr);
         addrs[i] = recovered_addr;
     }
 
@@ -31,11 +31,11 @@ fn main(
     let mut prev: Field = 0;
 
     for i in 0..SIGNER_COUNT {
-        constrain prev != sorted[i];
+        assert(prev != sorted[i]);
         prev = sorted[i];
     }
 
     let computed_root = std::hash::pedersen(sorted);
 
-    constrain computed_root[0] == root;
+    assert(computed_root[0] == root);
 }
