@@ -1,41 +1,47 @@
 use dep::ecrecover;
 use dep::std;
 
-global SIGNER_COUNT = 3;
-
+// 1. check that sigs are valid for the pub message hash
+// 2. check that signers are actually signers for the polynomial
 fn main(
-    root: Field,
-    pub_keys: [ecrecover::secp256k1::PubKey; SIGNER_COUNT],
-    signatures: [[u8; 64]; SIGNER_COUNT],
-    // threshold: pub Field,
-    safe_message_hash: pub [u8; 32]
+    r: Field,
+    pub_keys: [ecrecover::secp256k1::PubKey],
+    signatures: [[u8; 64]],
+    safe_message_hash: pub [u8; 32],
+    polynomial: [Field],
+    poly_commit: pub Field
 ) {
-    // assert(threshold < 8);
     assert(pub_keys.len() == signatures.len());
 
-    let mut addrs: [Field; SIGNER_COUNT] = [0; SIGNER_COUNT];
+    let mut point: Field = 0;
+    let mut prev_addr: Field = 0;
 
-    for i in 0..SIGNER_COUNT {
-        let recovered_addr = ecrecover::ecrecover(
+    for i in 0..signatures.len() {
+        let recovered_addr: Field = ecrecover::ecrecover(
             pub_keys[i].pub_x,
             pub_keys[i].pub_y,
             signatures[i],
             safe_message_hash
         );
 
-        // assert(prevAddr <= recovered_addr);
-        addrs[i] = recovered_addr;
+        // check for duplicates
+        assert(recovered_addr > prev_addr);
+        // memoize the last address
+        prev_addr = recovered_addr;
+
+        // create a combination point
+        point += recovered_addr;
     }
 
-    let sorted = addrs.sort();
-    let mut prev: Field = 0;
+    // check the point is within the polynomial
+    assert(compute_poly(point) == 0);
+    // check the polynomial matches the public polynomial commitment
+    assert(std::hash::pederesen(polynomial) == poly_commit);
+ }
 
-    for i in 0..SIGNER_COUNT {
-        assert(prev != sorted[i]);
-        prev = sorted[i];
+fn compute_poly(poly: [Field], point: Field) -> Field {
+    let mut point: Field = 0;
+    for i in 0..poly.len() {
+        point += poly[poly.len() - i] * point.pow(i);
     }
-
-    let computed_root = std::hash::pedersen(sorted);
-
-    assert(computed_root[0] == root);
 }
