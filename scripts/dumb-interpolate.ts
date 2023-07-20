@@ -15,7 +15,10 @@ const SIGNERS = [
   // 0xa0ee7a142d267c1f36714e4a8f75612f20a79720n,
 ];
 console.log("Given a Threshold of: ", THRESHOLD);
-console.log("And the following of signers: ", SIGNERS);
+console.log(
+  "And the following of signers: ",
+  SIGNERS.map((s) => "0x" + s.toString(16))
+);
 
 const combinations = generateCombinations(SIGNERS, THRESHOLD);
 console.log("Yields the combinations: ", combinations);
@@ -33,10 +36,6 @@ combinations.forEach((combo, i) => {
       "Evaluation of combo @ index: " + i + " did not constrain to 0!"
     );
 });
-
-
-
-
 
 //
 //// utils
