@@ -3,7 +3,20 @@ use dep::std;
 
 // 1. check that sigs are valid for the pub message hash
 // 2. check that signers are actually signers for the polynomial
+
+// 3/5 safe
 fn main(
+    r: Field,
+    pub_keys: [ecrecover::secp256k1::PubKey, 3],
+    signatures: [[u8; 64], 3],
+    safe_message_hash: pub [u8; 32],
+    polynomial: [Field, 11],
+    poly_commit: pub Field
+) {
+    dark_safe(r, pub_keys, signatures, safe_message_hash, polynomial, poly_commit);
+}
+
+fn dark_safe(
     r: Field,
     pub_keys: [ecrecover::secp256k1::PubKey],
     signatures: [[u8; 64]],
