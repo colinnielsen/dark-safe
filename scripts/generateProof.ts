@@ -1,12 +1,5 @@
-import {
-  create_proof,
-  setup_generic_prover_and_verifier,
-  verify_proof,
-} from "@noir-lang/barretenberg/dest/client_proofs";
-import { acir_from_bytes } from "@noir-lang/noir_wasm";
 import { ethers } from "ethers";
 import fs, { readFileSync } from "fs";
-import path from "path";
 
 function path_to_uint8array(path: string) {
   let buffer = readFileSync(path);
@@ -43,39 +36,6 @@ const compileWithNargo = (
   fs.writeFileSync("Verifier.toml", verifierToml);
 };
 
-const compileWithWasm = async (
-  buildName: string,
-  pub_key_x: string, // these are all hex strings
-  pub_key_y: string,
-  signature: string,
-  hashed_message: string
-) => {
-  let acir = acir_from_bytes(
-    path_to_uint8array(
-      path.resolve(__dirname, `../circuits/build/${buildName}.acir`)
-    )
-  );
-  let [prover, verifier] = await setup_generic_prover_and_verifier(acir);
-
-  console.log("Proof inputs:");
-  const inputs = [
-    "0x" + pub_key_x,
-    "0x" + pub_key_y,
-    signature.slice(0, -2), // slice off the V value
-    hashed_message,
-  ];
-
-  console.log(inputs);
-
-  console.log("Creating proof...");
-  const proof = await create_proof(prover, acir, inputs);
-  console.log("Verifying proof...");
-  const verified = await verify_proof(verifier, proof);
-
-  console.log("Proof : ", proof.toString("hex"));
-  console.log("Is the proof valid : ", verified);
-};
-
 async function main() {
   const useNargo = process.argv[2] === "Nargo";
   const build = process.argv[3];
@@ -101,7 +61,7 @@ async function main() {
 
   // build based on cli input
   if (useNargo) compileWithNargo(pub_key_x, pub_key_y, signature, digest);
-  else await compileWithWasm(build, pub_key_x, pub_key_y, signature, digest);
+  // else await compileWithWasm(build, pub_key_x, pub_key_y, signature, digest);
 }
 
 main()

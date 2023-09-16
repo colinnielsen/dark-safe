@@ -1,13 +1,13 @@
 {
   "name": "dark-safe",
-  "version": "1.0.0",
+  "author": "@colinnielsen",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=18.16.0"
+  },
   "description": "Multi-sig verification in zero knowledge",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
@@ -19,6 +19,7 @@
     "@typechain/ethers-v5": "^10.1.0",
     "@typechain/hardhat": "^6.1.2",
     "@types/chai": "^4.2.0",
+    "@types/inquirer": "^8.0.0",
     "@types/mocha": "^9.1.0",
     "@types/node": ">=12.0.0",
     "chai": "^4.2.0",
@@ -34,6 +35,7 @@
     "@gnosis.pm/zodiac": "^3.2.0",
     "@noir-lang/aztec_backend": "^0.11.0",
     "@noir-lang/barretenberg": "^2.19.0",
-    "@noir-lang/noir_wasm": "^0.10.0"
+    "@noir-lang/noir_wasm": "^0.10.0",
+    "inquirer": "^8.0.0"
   }
 }
