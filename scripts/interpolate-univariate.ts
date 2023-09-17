@@ -1,29 +1,39 @@
 const inquirer = require("inquirer");
+import { writeFileSync } from "fs";
+import { hashMessage } from "viem";
+import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
 
 const bn_254_fp =
   21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 
-const DEFAULT_SIGNERS = [
-  0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266n,
-  0x70997970c51812dc3a010c7d01b50e0d17dc79c8n,
-  0x3c44cdddb6a900fa2b585dd299e03d12fa4293bcn,
-  0x90f79bf6eb2c4f870365e785982e1f101e93b906n,
-  0x15d34aaf54267db7d7c367839aaf71a00a2c6a65n,
-  0x9965507d1a55bcc2695c58ba16fb37d819b0a4dcn,
-  0x976ea74026e726554db657fa54763abd0c3a0aa9n,
-  0x14dc79964da2c08b23698b3d3cc7ca32193d9955n,
-];
+const MESSAGE = "hello world";
+const MESSAGE_HASH = hashMessage(MESSAGE);
+
+const DEFAULT_SIGNERS_PK = [
+  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+  "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
+  "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
+  "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
+  "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
+  "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
+  "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
+  "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
+] as const;
+
+const DEFAULT_SIGNERS = DEFAULT_SIGNERS_PK.map((pk) => privateKeyToAccount(pk));
+
+const MAX_SIGNERS = DEFAULT_SIGNERS.length;
 
 async function main() {
-  const SIGNERS: bigint[] = await inquirer
+  const SIGNERS: PrivateKeyAccount[] = await inquirer
     .prompt({
       message: "Select signers",
       name: "signers",
       type: "checkbox",
       choices: [
-        ...DEFAULT_SIGNERS.map((s) => ({
-          value: s,
-          name: "0x" + s.toString(16),
+        ...DEFAULT_SIGNERS.map((account) => ({
+          value: account,
+          name: account.address,
         })),
         new inquirer.Separator(),
       ],
@@ -34,7 +44,6 @@ async function main() {
       return signers;
     });
 
-  console.log(SIGNERS);
   const threshold = await inquirer
     .prompt({
       message: "Enter a signing threshold",
@@ -52,10 +61,13 @@ async function main() {
   console.log("Given a Threshold of: ", threshold);
   console.log(
     "And the following of signers: ",
-    SIGNERS.map((s) => "0x" + s.toString(16))
+    SIGNERS.map(({ address }) => address)
   );
 
-  const combinations = generateCombinations(SIGNERS, threshold);
+  const combinations = generateCombinations(
+    SIGNERS.map(({ address }) => BigInt(address)),
+    threshold
+  );
   console.log("Yields the combinations: ", combinations);
 
   const _P = computePolynomial(combinations);
@@ -82,6 +94,51 @@ async function main() {
           result
       );
   });
+
+  const emptyPubKeyAndSigners = new Array(MAX_SIGNERS).fill({
+    is_empty: "1",
+    pub_key_x: null,
+    pub_key_y: null,
+    signature: null,
+  });
+
+  const pubKeyAndSigners = await Promise.all(
+    SIGNERS.map(async (account) => {
+      const pubKey = account.publicKey.slice(4); // remove 0x04 prefix
+      const fullSig = await account.signMessage({ message: MESSAGE });
+
+      return {
+        is_empty: "0",
+        pub_key_x: hexToUint8Array(pubKey.slice(0, 64)),
+        pub_key_y: hexToUint8Array(pubKey.slice(64)),
+        signature: Uint8Array.from(
+          Buffer.from(fullSig.slice(2).slice(0, 128), "hex")
+        ),
+      };
+    })
+  );
+  const pubKeyAndSignersWithEmpty = pubKeyAndSigners.concat(
+    emptyPubKeyAndSigners.slice(SIGNERS.length)
+  );
+  writeFileSync(
+    "Prover.toml",
+    `polynomial = [${P.map((p) => `"${p.toString(10)}"`)}]\n` +
+      `r = "0"\n` +
+      `polynomial_commitment = "0"\n` +
+      `safe_message_hash = [${hexToUint8Array(MESSAGE_HASH)}]\n` +
+      `${pubKeyAndSignersWithEmpty
+        .map(
+          (v) =>
+            "\n[[signature_data]]\n" +
+            `is_empty = ${v.is_empty}\n` +
+            `pub_key_x = [${v.pub_key_x ?? new Array(32).fill(0)}]\n` +
+            `pub_key_y = [${v.pub_key_y ?? new Array(32).fill(0)}]\n` +
+            `signature = [${v.signature ?? new Array(64).fill(0)}]
+    `
+        )
+        .join("")}
+    `
+  );
 }
 
 main().catch(console.error);
@@ -141,3 +198,8 @@ function evauluatePolynomial(P: bigint[], x: bigint) {
     );
   }, 0n);
 }
+
+const hexToUint8Array = (hex: string) =>
+  Uint8Array.from(
+    Buffer.from(hex.startsWith("0x") ? hex.slice(2) : hex, "hex")
+  );

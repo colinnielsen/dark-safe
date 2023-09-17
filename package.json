@@ -5,6 +5,9 @@
   "engines": {
     "node": ">=18.16.0"
   },
+  "scripts": {
+    "build": "ts-node scripts/interpolate-univariate.ts"
+  },
   "description": "Multi-sig verification in zero knowledge",
   "main": "index.js",
   "license": "MIT",
@@ -36,6 +39,7 @@
     "@noir-lang/aztec_backend": "^0.11.0",
     "@noir-lang/barretenberg": "^2.19.0",
     "@noir-lang/noir_wasm": "^0.10.0",
-    "inquirer": "^8.0.0"
+    "inquirer": "^8.0.0",
+    "viem": "^1.10.14"
   }
 }
