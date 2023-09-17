@@ -1,8 +1,10 @@
 [package]
 authors = ["@colinnielsen"]
 compiler_version = "0.8.0"
+name = "dark_safe"
+type = "bin"
 notes = "AMDG"
 
 [dependencies]
-ecrecover = { tag = "v0.8.0", git = "https://github.com/colinnielsen/ecrecover-noir" }
+ecrecover = { tag = "v0.10.0", git = "https://github.com/colinnielsen/ecrecover-noir" }
 

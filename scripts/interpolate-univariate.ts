@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 
 const bn_254_fp =
-  21888242871839275222246405745257275088696311157297823662689037894645226208583n;
+  21888242871839275222246405745257275088548364400416034343698204186575808495617n;
 
 const DEFAULT_SIGNERS = [
   0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266n,
@@ -12,8 +12,6 @@ const DEFAULT_SIGNERS = [
   0x9965507d1a55bcc2695c58ba16fb37d819b0a4dcn,
   0x976ea74026e726554db657fa54763abd0c3a0aa9n,
   0x14dc79964da2c08b23698b3d3cc7ca32193d9955n,
-  0x23618e81e3f5cdf7f54c3d65f7fbc0abf5b21e8fn,
-  0xa0ee7a142d267c1f36714e4a8f75612f20a79720n,
 ];
 
 async function main() {
@@ -43,7 +41,13 @@ async function main() {
       name: "threshold",
       type: "number",
     })
-    .then(({ threshold }: { threshold: number }) => threshold);
+    .then(({ threshold }: { threshold: number }) => {
+      if (threshold == 0) throw new Error("Threshold must be greater than 0");
+      if (threshold > SIGNERS.length)
+        throw new Error("Threshold is greater than signer count");
+
+      return threshold;
+    });
 
   console.log("Given a Threshold of: ", threshold);
   console.log(
@@ -54,19 +58,28 @@ async function main() {
   const combinations = generateCombinations(SIGNERS, threshold);
   console.log("Yields the combinations: ", combinations);
 
-  const P = computePolynomial(combinations);
-  console.log("And the polynomial", P);
-
+  const _P = computePolynomial(combinations);
+  // pad the polynomial to 70 coefficients
+  const P = _P.concat(new Array(100).fill(0n)).slice(0, 70);
+  console.log(
+    "And the polynomial",
+    P.map((p) => p.toString(10))
+  );
   console.log(
     `Evaluating polynomial P of degree ${P.length} \n================`
   );
+
   combinations.forEach((combo, i) => {
     const result = evauluatePolynomial(P, combo);
+    console.log({ x: combo.toString(10), result });
     if (result === 0n)
       console.log("Evaluation of combo @ index: " + i, " = " + result);
     else
       throw new Error(
-        "Evaluation of combo @ index: " + i + " did not constrain to 0!"
+        "Evaluation of combo @ index: " +
+          i +
+          " did not constrain to 0!\n" +
+          result
       );
   });
 }
@@ -100,7 +113,8 @@ function multiplyPolynomials(p1: bigint[], p2: bigint[]): bigint[] {
   for (let i = 0; i < p1.length; i++) {
     for (let j = 0; j < p2.length; j++) {
       result[i + j] =
-        result[i + j] + (((p1[i] * p2[j]) % bn_254_fp) % bn_254_fp);
+        (result[i + j] + (((p1[i] * p2[j]) % bn_254_fp) % bn_254_fp)) %
+        bn_254_fp;
     }
   }
 
@@ -114,15 +128,16 @@ function computePolynomial(roots: bigint[]): bigint[] {
     (poly, root) => multiplyPolynomials(poly, [-root, 1n]),
     [1n]
   );
-  return polynomial;
+
+  return polynomial.map((p) => (p < 0n ? p + bn_254_fp : p));
 }
 
 // Evaluate the polynomial at x
 function evauluatePolynomial(P: bigint[], x: bigint) {
-  return P.reduceRight(
-    (acc, coefficient, degree) =>
+  return P.reduce((acc, coefficient, degree) => {
+    return (
       (acc += (coefficient * (x ** BigInt(degree) % bn_254_fp)) % bn_254_fp) %
-      bn_254_fp,
-    0n
-  );
+      bn_254_fp
+    );
+  }, 0n);
 }
