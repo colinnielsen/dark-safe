@@ -96,7 +96,7 @@ async function main() {
   });
 
   const emptyPubKeyAndSigners = new Array(MAX_SIGNERS).fill({
-    is_empty: "1",
+    should_calculate: 0,
     pub_key_x: null,
     pub_key_y: null,
     signature: null,
@@ -108,7 +108,7 @@ async function main() {
       const fullSig = await account.signMessage({ message: MESSAGE });
 
       return {
-        is_empty: "0",
+        should_calculate: 1,
         pub_key_x: hexToUint8Array(pubKey.slice(0, 64)),
         pub_key_y: hexToUint8Array(pubKey.slice(64)),
         signature: Uint8Array.from(
@@ -121,7 +121,7 @@ async function main() {
     emptyPubKeyAndSigners.slice(SIGNERS.length)
   );
   writeFileSync(
-    "Prover.toml",
+    "circuits/Prover.toml",
     `polynomial = [${P.map((p) => `"${p.toString(10)}"`)}]\n` +
       `r = 0\n` +
       `polynomial_commitment = 0\n` +
@@ -130,7 +130,7 @@ async function main() {
         .map(
           (v) =>
             "\n[[signature_data]]\n" +
-            `is_empty = ${v.is_empty}\n` +
+            `should_calculate = ${v.should_calculate}\n` +
             `pub_key_x = [${v.pub_key_x ?? new Array(32).fill(0)}]\n` +
             `pub_key_y = [${v.pub_key_y ?? new Array(32).fill(0)}]\n` +
             `signature = [${v.signature ?? new Array(64).fill(0)}]

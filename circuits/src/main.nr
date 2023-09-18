@@ -7,7 +7,7 @@ global MAX_SIGNER_COUNT: Field = 8;
 global MAX_POLYNOMIAL_DEGREE: Field = 70;
 
 struct PubKeyAndSigs {
-    is_empty: bool, // a no-op flag to signify an empty array
+    should_calculate: bool, // a no-op flag to signify an empty struct
     pub_key_x: [u8; 32], // x coordinate of the public key
     pub_key_y: [u8; 32], // y coordinate of the public key
     signature: [u8; 64], // signature of the safe_message_hash
@@ -25,7 +25,7 @@ fn main(
 
     for i in 0..MAX_SIGNER_COUNT {
         std::println(i);
-        if(signature_data[i].is_empty == false) {
+        if(signature_data[i].should_calculate == true) {
             std::println("computing");
 
             let recovered_addr: Field = ecrecover(
