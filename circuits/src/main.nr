@@ -24,6 +24,7 @@ fn main(
     // let mut last_addr: Field = 0; // todo
 
     for i in 0..MAX_SIGNER_COUNT {
+        std::println(i);
         if(signature_data[i].is_empty == false) {
             std::println("computing");
 
@@ -38,7 +39,6 @@ fn main(
             root += recovered_addr; // std::hash::pedersen([recovered_addr, r])[0];
         } else {
             std::println("empty");
-            root += 0;
         }
 
     }
