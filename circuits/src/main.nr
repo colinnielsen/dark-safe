@@ -35,7 +35,6 @@ fn main(
             );
             // assert(recovered_addr > last_addr); // todo
 
-            // create a combination root
             root += recovered_addr; // std::hash::pedersen([recovered_addr, r])[0];
         } else {
             std::println("empty");
@@ -51,13 +50,10 @@ fn main(
  }
 
 fn evaluate_polynomial(P: [Field; MAX_POLYNOMIAL_DEGREE], x: Field) -> Field {
-    let mut result: Field = 0;
+    let degree = &mut 0;
 
-    for degree in 0..P.len() {
-        let coefficient: Field = P[degree];
-        let pow: Field = x.pow_32(degree);
-        result += coefficient * pow;
-    }
-
-    result
+    P.fold(0, |acc, coefficient| {
+        *degree += 1;
+        acc + coefficient * x.pow_32(*degree)
+    })
 }

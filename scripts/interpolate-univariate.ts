@@ -123,8 +123,8 @@ async function main() {
   writeFileSync(
     "Prover.toml",
     `polynomial = [${P.map((p) => `"${p.toString(10)}"`)}]\n` +
-      `r = "0"\n` +
-      `polynomial_commitment = "0"\n` +
+      `r = 0\n` +
+      `polynomial_commitment = 0\n` +
       `safe_message_hash = [${hexToUint8Array(MESSAGE_HASH)}]\n` +
       `${pubKeyAndSignersWithEmpty
         .map(
