@@ -36,7 +36,7 @@ fn main(
             );
             // assert(recovered_addr > last_addr); // todo
 
-            root += recovered_addr; // std::hash::pedersen([recovered_addr, r])[0];
+            root += recovered_addr;
         } else {
             std::println("empty");
         }
