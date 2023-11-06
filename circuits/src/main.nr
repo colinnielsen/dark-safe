@@ -3,8 +3,8 @@ use dep::std;
 
 // the max amount of signers allowed on a safe
 global MAX_SIGNER_COUNT: Field = 8;
-// K choose N for 8 choose 4 is 70
-global MAX_POLYNOMIAL_DEGREE: Field = 70;
+// N choose K for 8 choose 4 is 70 + 1 degree
+global MAX_POLYNOMIAL_DEGREE: Field = 71;
 
 struct PubKeyAndSigs {
     should_calculate: bool, // a no-op flag to signify an empty struct
@@ -14,20 +14,17 @@ struct PubKeyAndSigs {
 }
 
 fn main(
-    r: Field, // random number
+    // r: Field, // random number
     signature_data: [PubKeyAndSigs; MAX_SIGNER_COUNT],
-    safe_message_hash: [u8; 32],
+    safe_message_hash: pub [u8; 32],
     polynomial: [Field; MAX_POLYNOMIAL_DEGREE],
-    polynomial_commitment: Field
+    // polynomial_commitment: pub Field
 ) {
     let mut root: Field = 0;
     // let mut last_addr: Field = 0; // todo
 
     for i in 0..MAX_SIGNER_COUNT {
-        std::println(i);
-        if(signature_data[i].should_calculate == true) {
-            std::println("computing");
-
+        if(signature_data[i].should_calculate) {
             let recovered_addr: Field = ecrecover(
                 signature_data[i].pub_key_x,
                 signature_data[i].pub_key_y,
@@ -37,8 +34,6 @@ fn main(
             // assert(recovered_addr > last_addr); // todo
 
             root += recovered_addr;
-        } else {
-            std::println("empty");
         }
 
     }
