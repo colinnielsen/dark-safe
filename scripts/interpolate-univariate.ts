@@ -142,7 +142,7 @@ async function main() {
   writeFileSync(
     "circuits/Prover.toml",
     `polynomial = [\n${
-      P.map((p) => `"0x${p.toString(16)}"`).join(",\n") + "\n"
+      P.map((p) => `\t"0x${p.toString(16)}"`).join(",\n") + "\n"
     }]\n` +
       `r = 0\n` +
       `polynomial_commitment = "${polynomial_commitment.x}"\n` +
