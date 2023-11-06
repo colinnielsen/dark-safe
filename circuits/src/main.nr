@@ -1,4 +1,4 @@
-use dep::ecrecover::ecrecover;
+use dep::ecrecover::{ ecrecover };
 use dep::std;
 
 // the max amount of signers allowed on a safe
@@ -18,7 +18,7 @@ fn main(
     signature_data: [PubKeyAndSigs; MAX_SIGNER_COUNT],
     safe_message_hash: pub [u8; 32],
     polynomial: [Field; MAX_POLYNOMIAL_DEGREE],
-    // polynomial_commitment: pub Field
+    polynomial_commitment: pub Field
 ) {
     let mut root: Field = 0;
     // let mut last_addr: Field = 0; // todo
@@ -41,7 +41,7 @@ fn main(
     // check it's a root of a polynomial
     assert(evaluate_polynomial(polynomial, root) == 0);
     // check the polynomial matches the public polynomial commitment
-    // assert(std::hash::pedersen(polynomial)[0] == polynomial_commitment);
+    assert(std::hash::pedersen(polynomial)[0] == polynomial_commitment);
  }
 
 fn evaluate_polynomial(P: [Field; MAX_POLYNOMIAL_DEGREE], x: Field) -> Field {

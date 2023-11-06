@@ -1,11 +1,12 @@
 const inquirer = require("inquirer");
+import { Barretenberg, Fr } from "@aztec/bb.js";
 import { writeFileSync } from "fs";
 import { hashMessage } from "viem";
 import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
 
 const MAX_SIGNERS = 8;
 const SIGNER_COUNT = process.argv[2] ? +process.argv[2] : null;
-const THRESHOLD = process.argv[3] ? process.argv[3] : null;
+const THRESHOLD = process.argv[3] ? +process.argv[3] : null;
 
 const bn_254_fp =
   21888242871839275222246405745257275088548364400416034343698204186575808495617n;
@@ -133,13 +134,18 @@ async function main() {
     emptyPubKeyAndSigners.slice(pubKeyAndSigners.length, MAX_SIGNERS)
   );
 
+  const barretenberg = await Barretenberg.new(/* num_threads */ 1);
+  const polynomial_commitment = await barretenberg.pedersenCommit(
+    P.map((p) => new Fr(p))
+  );
+
   writeFileSync(
     "circuits/Prover.toml",
     `polynomial = [\n${
       P.map((p) => `"0x${p.toString(16)}"`).join(",\n") + "\n"
     }]\n` +
       `r = 0\n` +
-      `polynomial_commitment = 0\n` +
+      `polynomial_commitment = "${polynomial_commitment.x}"\n` +
       `safe_message_hash = [${hexToUint8Array(MESSAGE_HASH)}]\n` +
       `${pubKeyAndSignersWithEmpty
         .map(
@@ -154,6 +160,8 @@ async function main() {
         .join("")}
     `
   );
+
+  await barretenberg.destroy();
 }
 
 main().catch(console.error);
@@ -163,9 +171,9 @@ main().catch(console.error);
 //
 
 function kChooseN(k: bigint[], n: number): bigint[] {
+  if (n === 1) return k;
   if (n > k.length || n <= 0) return [];
   if (n === k.length) return [k.reduce((a, b) => a + b, 0n)];
-  if (n === 1) return k;
 
   let result: bigint[] = [];
   for (let i = 0; i < k.length; i++) {

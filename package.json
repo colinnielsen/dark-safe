@@ -35,9 +35,12 @@
     "typescript": ">=4.5.0"
   },
   "dependencies": {
+    "@aztec/bb.js": "^0.13.1",
     "@gnosis.pm/zodiac": "^3.2.0",
     "@noir-lang/aztec_backend": "^0.11.0",
+    "@noir-lang/backend_barretenberg": "^0.17.0",
     "@noir-lang/barretenberg": "^2.19.0",
+    "@noir-lang/noir_js": "^0.17.0",
     "@noir-lang/noir_wasm": "^0.10.0",
     "inquirer": "^8.0.0",
     "viem": "^1.10.14"
