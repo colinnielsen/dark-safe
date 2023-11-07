@@ -21,7 +21,6 @@ fn main(
     polynomial_commitment: pub Field
 ) {
     let mut root: Field = 0;
-    // let mut last_addr: Field = 0; // todo
 
     for i in 0..MAX_SIGNER_COUNT {
         if(signature_data[i].should_calculate) {
@@ -31,7 +30,6 @@ fn main(
                 signature_data[i].signature,
                 safe_message_hash
             );
-            // assert(recovered_addr > last_addr); // todo
 
             root += recovered_addr;
         }
