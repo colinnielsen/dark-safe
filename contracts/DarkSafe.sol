@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.15;
+pragma solidity >=0.8.19;
 
 import "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
@@ -12,13 +12,12 @@ contract UltraPlonkVerifier {
 }
 
 contract DarkSafe is Module, UltraPlonkVerifier {
-    bytes32 public merkleRoot;
+    bytes32 public polynomialCommitment;
 
     error PROOF_VERIFICATION_FAILED();
 
     constructor(address _safe) {
-        bytes memory initParams = abi.encode(_safe);
-        setUp(initParams);
+        setUp(abi.encode(_safe));
     }
 
     function setUp(bytes memory initializeParams) public override initializer {
@@ -54,7 +53,7 @@ contract DarkSafe is Module, UltraPlonkVerifier {
         if (
             !verify(
                 abi.encodePacked(
-                    abi.encodePacked(merkleRoot, safeTxHash),
+                    abi.encodePacked(safeTxHash, polynomialCommitment),
                     proof
                 )
             )
