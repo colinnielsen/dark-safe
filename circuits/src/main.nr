@@ -2,7 +2,7 @@ use dep::ecrecover::{ ecrecover };
 use dep::std;
 
 // the max amount of signers allowed on a safe
-global MAX_SIGNER_COUNT: Field = 8;
+global MAX_SIGNER_COUNT: u64 = 8;
 
 // N choose K for 8 choose 4 is 70 + 1 degree
 global MAX_POLYNOMIAL_DEGREE: Field = 71;
@@ -15,7 +15,6 @@ struct PubKeyAndSigs {
 }
 
 fn main(
-    // r: Field, // random number
     signature_data: [PubKeyAndSigs; MAX_SIGNER_COUNT],
     safe_message_hash: pub [u8; 32],
     polynomial: [Field; MAX_POLYNOMIAL_DEGREE],

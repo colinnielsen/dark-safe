@@ -1,6 +1,6 @@
 [package]
 authors = ["@colinnielsen"]
-compiler_version = "0.22.0"
+compiler_version = "0.25.0"
 name = "dark_safe"
 type = "bin"
 notes = "AMDG"
