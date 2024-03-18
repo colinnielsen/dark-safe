@@ -44,6 +44,11 @@ fn main(
     let hash_out = std::hash::pedersen_commitment(polynomial).x;
     std::println("hash_out");
     std::println(hash_out);
+
+    std::println("____________");
+
+    std::println("expected_hash");
+    std::println(polynomial_commitment);
     // check the polynomial matches the public polynomial commitment
     assert(hash_out == polynomial_commitment);
 }
