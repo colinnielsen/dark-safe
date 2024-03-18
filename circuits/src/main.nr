@@ -1,4 +1,6 @@
 use dep::ecrecover::{ecrecover};
+use dep::std::scalar_mul::{fixed_base_embedded_curve};
+use dep::std::field::bn254;
 use dep::std;
 
 // the max amount of signers allowed on a safe
@@ -20,7 +22,7 @@ fn main(
     polynomial: [Field; MAX_POLYNOMIAL_DEGREE],
     polynomial_commitment: pub Field
 ) {
-    let mut root: Field = 0;
+    let mut combination: Field = 0;
 
     for i in 0..MAX_SIGNER_COUNT {
         if (signature_data[i].should_calculate) {
@@ -31,26 +33,21 @@ fn main(
                 safe_message_hash
             );
 
-            root += recovered_addr;
+            // add the address together to yield an intermediary "combination variable"
+            combination += recovered_addr;
         }
     }
 
+    // scalar mul the combination by the generator
+    //      this makes the combination non-brute forcable
+    let (low, high) = bn254::decompose(combination);
+    let root = fixed_base_embedded_curve(low, high)[0];
+
     let num = evaluate_polynomial(polynomial, root);
-    std::println("num");
-    std::println(num);
     // check it's a root of a polynomial
     assert(num == 0);
-
-    let hash_out = std::hash::pedersen_commitment(polynomial).x;
-    std::println("hash_out");
-    std::println(hash_out);
-
-    std::println("____________");
-
-    std::println("expected_hash");
-    std::println(polynomial_commitment);
     // check the polynomial matches the public polynomial commitment
-    assert(hash_out == polynomial_commitment);
+    assert(std::hash::pedersen_commitment(polynomial).x == polynomial_commitment);
 }
 
 fn evaluate_polynomial(P: [Field; MAX_POLYNOMIAL_DEGREE], x: Field) -> Field {
