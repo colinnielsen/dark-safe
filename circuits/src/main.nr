@@ -1,4 +1,4 @@
-use dep::ecrecover::{ ecrecover };
+use dep::ecrecover::{ecrecover};
 use dep::std;
 
 // the max amount of signers allowed on a safe
@@ -35,11 +35,17 @@ fn main(
         }
     }
 
+    let num = evaluate_polynomial(polynomial, root);
+    std::println("num");
+    std::println(num);
     // check it's a root of a polynomial
-    assert(evaluate_polynomial(polynomial, root) == 0);
+    assert(num == 0);
 
+    let hash_out = std::hash::pedersen_commitment(polynomial).x;
+    std::println("hash_out");
+    std::println(hash_out);
     // check the polynomial matches the public polynomial commitment
-    assert(std::hash::pedersen_commitment(polynomial).x == polynomial_commitment);
+    assert(hash_out == polynomial_commitment);
 }
 
 fn evaluate_polynomial(P: [Field; MAX_POLYNOMIAL_DEGREE], x: Field) -> Field {
