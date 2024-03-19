@@ -1,10 +1,5 @@
 import { ethers } from "ethers";
-import fs, { readFileSync } from "fs";
-
-function path_to_uint8array(path: string) {
-  let buffer = readFileSync(path);
-  return new Uint8Array(buffer);
-}
+import fs from "fs";
 
 const hexToUint8Array = (hex: string) =>
   Uint8Array.from(Buffer.from(hex, "hex"));

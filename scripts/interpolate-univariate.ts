@@ -1,8 +1,11 @@
-const inquirer = require("inquirer");
+import inquirer from "inquirer";
 import { Barretenberg, Fr } from "@aztec/bb.js";
+import { cpus } from "node:os";
+import { createCurve } from "@noble/curves/_shortw_utils";
 import { writeFileSync } from "fs";
 import { hashMessage } from "viem";
 import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
+import { createHash } from "node:crypto";
 
 const MAX_SIGNERS = 8;
 const SIGNER_COUNT = process.argv[2] ? +process.argv[2] : null;
@@ -10,7 +13,6 @@ const THRESHOLD = process.argv[3] ? +process.argv[3] : null;
 
 const bn_254_fp =
   21888242871839275222246405745257275088548364400416034343698204186575808495617n;
-
 const MESSAGE = "hello world";
 const MESSAGE_HASH = hashMessage(MESSAGE);
 
@@ -43,7 +45,7 @@ async function main() {
             new inquirer.Separator(),
           ],
         })
-        .then(({ signers }: { signers: bigint[] }) => {
+        .then(({ signers }: { signers: PrivateKeyAccount[] }) => {
           if (signers.length < 2)
             throw new Error("Must select at least two signers");
           return signers;
@@ -81,6 +83,13 @@ async function main() {
     combinations.map((c) => `0x` + c.toString(16))
   );
 
+  // const grumpkin = createCurve({
+  //   a: 0n,
+  //   b: 3n
+
+  // })
+  const roots = combinations;
+
   const _P = rootsToPolynomial(combinations);
   // pad the polynomial to 70 coefficients
   const P = _P.concat(new Array(100).fill(0n)).slice(0, 71);
@@ -94,11 +103,9 @@ async function main() {
   );
 
   combinations.forEach((combo, i) => {
-    console.log(`combo: 0x${combo.toString(16)}`);
     const result = evauluatePolynomial(P, combo);
     console.log({ x: combo.toString(16), result });
-    if (result === 0n)
-      console.log("Evaluation of combo @ index: " + i, " = " + result);
+    if (result === 0n) console.log("f(x) @ index: " + i, " = " + result);
     else
       throw new Error(
         "Evaluation of combo @ index: " +
@@ -106,13 +113,6 @@ async function main() {
           " did not constrain to 0!\n" +
           result
       );
-  });
-
-  const emptyPubKeyAndSigners = new Array(MAX_SIGNERS).fill({
-    should_calculate: 0,
-    pub_key_x: null,
-    pub_key_y: null,
-    signature: null,
   });
 
   const pubKeyAndSigners = await Promise.all(
@@ -130,22 +130,22 @@ async function main() {
       };
     })
   );
+
   const pubKeyAndSignersWithEmpty = pubKeyAndSigners.concat(
-    emptyPubKeyAndSigners.slice(pubKeyAndSigners.length, MAX_SIGNERS)
+    new Array(MAX_SIGNERS - pubKeyAndSigners.length).fill({
+      ...pubKeyAndSigners[0],
+      should_calculate: 0,
+    })
   );
 
-  const barretenberg = await Barretenberg.new(/* num_threads */ 1);
-  const polynomial_commitment = await barretenberg.pedersenCommit(
-    P.map((p) => new Fr(p))
-  );
+  const polynomial_commitment = hashToField(P);
 
   writeFileSync(
     "circuits/Prover.toml",
     `polynomial = [\n${
       P.map((p) => `\t"0x${p.toString(16)}"`).join(",\n") + "\n"
     }]\n` +
-      `r = 0\n` +
-      `polynomial_commitment = "${polynomial_commitment.x}"\n` +
+      `polynomial_commitment = "${polynomial_commitment}"\n` +
       `safe_message_hash = [${hexToUint8Array(MESSAGE_HASH)}]\n` +
       `${pubKeyAndSignersWithEmpty
         .map(
@@ -160,8 +160,6 @@ async function main() {
         .join("")}
     `
   );
-
-  await barretenberg.destroy();
 }
 
 main().catch(console.error);
@@ -169,6 +167,37 @@ main().catch(console.error);
 //
 //// utils
 //
+
+function toBufferBE(num: bigint, width: number) {
+  if (num < BigInt(0)) {
+    throw new Error(
+      `Cannot convert negative bigint ${num.toString()} to buffer with toBufferBE.`
+    );
+  }
+  const hex = num.toString(16);
+  const buffer = Buffer.from(
+    hex.padStart(width * 2, "0").slice(0, width * 2),
+    "hex"
+  );
+  if (buffer.length > width) {
+    throw new Error(`Number ${num.toString(16)} does not fit in ${width}`);
+  }
+  return buffer;
+}
+
+function hashToField(P: bigint[]) {
+  const buffer = P.reduce<Buffer>((buff, p) => {
+    return !buff ? toBufferBE(p, 32) : Buffer.concat([buff, toBufferBE(p, 32)]);
+  }, null);
+
+  const hash: bigint = BigInt(
+    "0x" + createHash("BLAKE2s256").update(buffer).digest().toString("hex")
+  );
+
+  const onField = hash > bn_254_fp ? hash % bn_254_fp : hash;
+
+  return "0x" + onField.toString(16).padStart(64, "0");
+}
 
 function kChooseN(k: bigint[], n: number): bigint[] {
   if (n === 1) return k;
