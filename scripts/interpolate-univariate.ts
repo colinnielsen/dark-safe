@@ -1,11 +1,11 @@
 import inquirer from "inquirer";
-import { Barretenberg, Fr } from "@aztec/bb.js";
-import { cpus } from "node:os";
-import { createCurve } from "@noble/curves/_shortw_utils";
+
 import { writeFileSync } from "fs";
 import { hashMessage } from "viem";
 import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
 import { createHash } from "node:crypto";
+import { Fq } from "./grumpkinpk";
+import { derivePublicKey } from "@aztec/circuits.js";
 
 const MAX_SIGNERS = 8;
 const SIGNER_COUNT = process.argv[2] ? +process.argv[2] : null;
@@ -83,14 +83,13 @@ async function main() {
     combinations.map((c) => `0x` + c.toString(16))
   );
 
-  // const grumpkin = createCurve({
-  //   a: 0n,
-  //   b: 3n
+  const roots = combinations.map((c) => derivePublicKey(new Fq(c)).x.value);
+  console.log(
+    "And roots: ",
+    roots.map((c) => `0x` + c.toString(16))
+  );
 
-  // })
-  const roots = combinations;
-
-  const _P = rootsToPolynomial(combinations);
+  const _P = rootsToPolynomial(roots);
   // pad the polynomial to 70 coefficients
   const P = _P.concat(new Array(100).fill(0n)).slice(0, 71);
 
@@ -102,7 +101,7 @@ async function main() {
     `Evaluating polynomial P of degree ${P.length} \n================`
   );
 
-  combinations.forEach((combo, i) => {
+  roots.forEach((combo, i) => {
     const result = evauluatePolynomial(P, combo);
     console.log({ x: combo.toString(16), result });
     if (result === 0n) console.log("f(x) @ index: " + i, " = " + result);

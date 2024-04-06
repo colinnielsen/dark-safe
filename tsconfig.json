@@ -1,15 +1,19 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2020",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
+    "module": "ESNext",
     "esModuleInterop": true,
+    "target": "ESNext",
+    "moduleResolution": "Node",
+    "noImplicitAny": true,
     "sourceMap": true,
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
       "*": ["node_modules/*", "src/types/*"]
     }
-  }
+  },
+  "ts-node": {
+    "esm": true
+  },
+  "lib": ["esnext"]
 }

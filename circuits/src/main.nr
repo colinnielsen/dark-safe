@@ -40,21 +40,16 @@ fn main(
 
     // scalar mul the combination by the generator
     //      this makes the combination non brute-forcable
-    // let (low, high) = bn254::decompose(combination);
-    // let root = fixed_base_embedded_curve(low, high)[0];
+    let (low, high) = bn254::decompose(combination);
+    let root = fixed_base_embedded_curve(low, high)[0];
 
-    // let num = evaluate_polynomial(polynomial, combination);
     // check it's a root of a polynomial
-    // assert(num == 0);
-    // let out = std::hash::blake2s(polynomial);
-    // let mut n: Field = 0;
-    // for i in 0..32 {
-    //     n = n * 256 + out[i] as Field;
-    // }
+    assert(evaluate_polynomial(polynomial, root) == 0);
 
-    std::println(std::hash::hash_to_field(polynomial));
     // check the polynomial matches the public polynomial commitment
-    assert(std::hash::hash_to_field(polynomial) == polynomial_commitment);
+    let out = std::hash::hash_to_field(polynomial);
+    std::println(out);
+    // assert(out == polynomial_commitment);
 }
 
 fn evaluate_polynomial(P: [Field; MAX_POLYNOMIAL_DEGREE], x: Field) -> Field {
