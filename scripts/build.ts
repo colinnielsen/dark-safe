@@ -5,7 +5,7 @@ import inquirer from "inquirer";
 import { cpus } from "node:os";
 import { hashMessage } from "viem";
 import { PrivateKeyAccount, privateKeyToAccount } from "viem/accounts";
-import { Fq } from "./grumpkinpk";
+import { Fq } from "./utils/grumpkinpk";
 import {
   evauluatePolynomial,
   hexToUint8Array,
@@ -164,6 +164,10 @@ export async function main() {
         .join("")}
     `
   );
+
+  console.log("\nWrote Prover.toml ✨\n");
+
+  console.log("run:\n\n cd/circuits && nargo build\n\nto start execute proofs");
 }
 
 main()
