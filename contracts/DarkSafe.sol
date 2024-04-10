@@ -3,19 +3,18 @@ pragma solidity >=0.8.19;
 
 import "@gnosis.pm/zodiac/contracts/core/Module.sol";
 import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
+import {UltraVerifier} from "./Verifier.sol";
 
-contract UltraPlonkVerifier {
-    /// @notice stub
-    function verify(bytes memory) public pure returns (bool) {
-        return true;
-    }
-}
-
-contract DarkSafe is Module, UltraPlonkVerifier {
-    /// @notice the hash of the polynomial 
+contract DarkSafe is Module {
+    /// @notice the hash of the polynomial
     bytes32 public polynomialCommitment;
+    UltraVerifier verifier = new UltraVerifier();
 
     error PROOF_VERIFICATION_FAILED();
+
+    /// @dev emit the polynomial commitiment and the polynomial as an easy way to
+    ///     decentralize the polynomial for later proof generation
+    event SignersRotated(bytes32 indexed polynomialCommitment, bytes32[] polynomial);
 
     constructor(address _safe, bytes32 _polynomialCommitiment) {
         setUp(abi.encode(_safe, _polynomialCommitiment));
@@ -33,6 +32,13 @@ contract DarkSafe is Module, UltraPlonkVerifier {
         polynomialCommitment = _polynomialCommitiment;
     }
 
+    /// @dev updates polynomialCommitiment, thus changing the valid signer sets
+    function updateSigners(bytes32 newCommitiment, bytes32[] memory polynomial) public onlyOwner {
+        polynomialCommitment = newCommitiment;
+
+        emit SignersRotated(newCommitiment, polynomial);
+    }
+
     function _execute(address to, uint256 value, bytes calldata data, Enum.Operation operation, bytes memory proof)
         internal
         returns (bool success, bytes memory returnData)
@@ -41,9 +47,11 @@ contract DarkSafe is Module, UltraPlonkVerifier {
         bytes32 safeTxHash =
             safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), safe.nonce());
 
-        if (!verify(abi.encodePacked(abi.encodePacked(safeTxHash, polynomialCommitment), proof))) {
-            revert PROOF_VERIFICATION_FAILED();
-        }
+        bytes32[] memory publicInputs = new bytes32[](2);
+        publicInputs[0] = safeTxHash;
+        publicInputs[1] = polynomialCommitment;
+
+        if (verifier.verify(proof, publicInputs) == false) revert PROOF_VERIFICATION_FAILED();
 
         (success, returnData) = execAndReturnData(to, value, data, operation);
     }
@@ -68,9 +76,5 @@ contract DarkSafe is Module, UltraPlonkVerifier {
         returns (bool success)
     {
         (success,) = _execute(to, value, data, operation, proof);
-    }
-
-    function rotateSigners(bytes32 newCommitiment) public onlyOwner {
-        polynomialCommitment = newCommitiment;
     }
 }
