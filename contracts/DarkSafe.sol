@@ -12,6 +12,7 @@ contract UltraPlonkVerifier {
 }
 
 contract DarkSafe is Module, UltraPlonkVerifier {
+    /// @notice the hash of the polynomial 
     bytes32 public polynomialCommitment;
 
     error PROOF_VERIFICATION_FAILED();
