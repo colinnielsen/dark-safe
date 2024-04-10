@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { Fr } from "@aztec/bb.js";
 import { randomBytes } from "crypto";
 
 const ZERO_BUFFER = Buffer.alloc(32);
@@ -84,59 +85,6 @@ export class BufferReader {
       map[key] = value;
     }
     return map;
-  }
-}
-
-export class Fr {
-  static ZERO = new Fr(0n);
-  static MODULUS =
-    0x30644e72e131a029b85045b68181585d2833e84879b9709143e1f593f0000001n;
-  static MAX_VALUE = this.MODULUS - 1n;
-  static SIZE_IN_BYTES = 32;
-  value;
-
-  constructor(_value) {
-    if (_value > Fr.MAX_VALUE) {
-      throw new Error(`Fr out of range ${_value}.`);
-    }
-    this.value = _value;
-  }
-
-  static random() {
-    const r = toBigIntBE(randomBytes(64)) % Fr.MODULUS;
-    return new this(r);
-  }
-
-  static fromBuffer(buffer) {
-    const reader = BufferReader.asReader(buffer);
-    return new this(toBigIntBE(reader.readBytes(this.SIZE_IN_BYTES)));
-  }
-
-  static fromBufferReduce(buffer) {
-    const reader = BufferReader.asReader(buffer);
-    return new this(
-      toBigIntBE(reader.readBytes(this.SIZE_IN_BYTES)) % Fr.MODULUS
-    );
-  }
-
-  static fromString(str) {
-    return this.fromBuffer(Buffer.from(str.replace(/^0x/i, ""), "hex"));
-  }
-
-  toBuffer() {
-    return toBufferBE(this.value, Fr.SIZE_IN_BYTES);
-  }
-
-  toString() {
-    return "0x" + uint8ArrayToHexString(this.toBuffer());
-  }
-
-  equals(rhs) {
-    return this.value === rhs.value;
-  }
-
-  isZero() {
-    return this.value === 0n;
   }
 }
 

@@ -7,7 +7,7 @@
   },
   "type": "module",
   "scripts": {
-    "build": "node --experimental-specifier-resolution=node --loader ts-node/esm scripts/interpolate-univariate.ts"
+    "build": "export NODE_NO_WARNINGS=1 && node --experimental-specifier-resolution=node --loader ts-node/esm scripts/interpolate-univariate.ts"
   },
   "description": "Multi-sig verification in zero knowledge",
   "main": "index.js",

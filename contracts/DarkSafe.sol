@@ -16,49 +16,60 @@ contract DarkSafe is Module, UltraPlonkVerifier {
 
     error PROOF_VERIFICATION_FAILED();
 
-    constructor(address _safe) {
-        setUp(abi.encode(_safe));
+    constructor(address _safe, bytes32 _polynomialCommitiment) {
+        setUp(abi.encode(_safe, _polynomialCommitiment));
     }
 
+    /// @dev a setup function to ensure factory friendly compatibility
     function setUp(bytes memory initializeParams) public override initializer {
-        __Ownable_init();
-        address _safe = abi.decode(initializeParams, (address));
+        (address _safe, bytes32 _polynomialCommitiment) = abi.decode(initializeParams, (address, bytes32));
 
+        __Ownable_init();
         setAvatar(_safe);
         setTarget(_safe);
         transferOwnership(_safe);
+
+        polynomialCommitment = _polynomialCommitiment;
     }
 
-    function execute(
-        bytes memory proof,
+    function _execute(address to, uint256 value, bytes calldata data, Enum.Operation operation, bytes memory proof)
+        internal
+        returns (bool success, bytes memory returnData)
+    {
+        GnosisSafe safe = GnosisSafe(payable(address(avatar)));
+        bytes32 safeTxHash =
+            safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), safe.nonce());
+
+        if (!verify(abi.encodePacked(abi.encodePacked(safeTxHash, polynomialCommitment), proof))) {
+            revert PROOF_VERIFICATION_FAILED();
+        }
+
+        (success, returnData) = execAndReturnData(to, value, data, operation);
+    }
+
+    /// @notice execute a safe call on the `target` with `proof` data instead of the safe message
+    /// @return success if the call succeeded
+    /// @return returnData any return data from the callee
+    function execAndReturnData(
         address to,
         uint256 value,
         bytes calldata data,
-        Enum.Operation operation
-    ) external returns (bytes memory returnData) {
-        GnosisSafe safe = GnosisSafe(payable(address(avatar)));
-        bytes32 safeTxHash = safe.getTransactionHash(
-            to,
-            value,
-            data,
-            operation,
-            0,
-            0,
-            0,
-            address(0),
-            payable(0),
-            safe.nonce()
-        );
+        Enum.Operation operation,
+        bytes memory proof
+    ) external returns (bool success, bytes memory returnData) {
+        (success, returnData) = _execute(to, value, data, operation, proof);
+    }
 
-        if (
-            !verify(
-                abi.encodePacked(
-                    abi.encodePacked(safeTxHash, polynomialCommitment),
-                    proof
-                )
-            )
-        ) revert PROOF_VERIFICATION_FAILED();
+    /// @notice execute a safe call on the `target` with `proof` data instead of the safe message
+    /// @return success if the call succeeded
+    function exec(address to, uint256 value, bytes calldata data, Enum.Operation operation, bytes memory proof)
+        external
+        returns (bool success)
+    {
+        (success,) = _execute(to, value, data, operation, proof);
+    }
 
-        (, returnData) = execAndReturnData(to, value, data, operation);
+    function rotateSigners(bytes32 newCommitiment) public onlyOwner {
+        polynomialCommitment = newCommitiment;
     }
 }
