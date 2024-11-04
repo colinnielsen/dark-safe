@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.8.19;
 
-import "@gnosis.pm/zodiac/contracts/core/Module.sol";
-import "@gnosis.pm/safe-contracts/contracts/GnosisSafe.sol";
+import {Module, Enum as ZodiacEnum} from "zodiac/core/Module.sol";
+import {Safe, Enum as SafeEnum} from "safe-contracts/Safe.sol";
 import {UltraVerifier} from "./Verifier.sol";
 
 contract DarkSafe is Module {
@@ -39,11 +39,11 @@ contract DarkSafe is Module {
         emit SignersRotated(newCommitiment, polynomial);
     }
 
-    function _execute(address to, uint256 value, bytes calldata data, Enum.Operation operation, bytes memory proof)
+    function _execute(address to, uint256 value, bytes calldata data, SafeEnum.Operation operation, bytes memory proof)
         internal
         returns (bool success, bytes memory returnData)
     {
-        GnosisSafe safe = GnosisSafe(payable(address(avatar)));
+        Safe safe = Safe(payable(address(avatar)));
         bytes32 safeTxHash =
             safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), safe.nonce());
 
@@ -53,7 +53,7 @@ contract DarkSafe is Module {
 
         if (verifier.verify(proof, publicInputs) == false) revert PROOF_VERIFICATION_FAILED();
 
-        (success, returnData) = execAndReturnData(to, value, data, operation);
+        (success, returnData) = execAndReturnData(to, value, data, ZodiacEnum.Operation(uint8(operation)));
     }
 
     /// @notice execute a safe call on the `target` with `proof` data instead of the safe message
@@ -63,7 +63,7 @@ contract DarkSafe is Module {
         address to,
         uint256 value,
         bytes calldata data,
-        Enum.Operation operation,
+        SafeEnum.Operation operation,
         bytes memory proof
     ) external returns (bool success, bytes memory returnData) {
         (success, returnData) = _execute(to, value, data, operation, proof);
@@ -71,7 +71,7 @@ contract DarkSafe is Module {
 
     /// @notice execute a safe call on the `target` with `proof` data instead of the safe message
     /// @return success if the call succeeded
-    function exec(address to, uint256 value, bytes calldata data, Enum.Operation operation, bytes memory proof)
+    function exec(address to, uint256 value, bytes calldata data, SafeEnum.Operation operation, bytes memory proof)
         external
         returns (bool success)
     {

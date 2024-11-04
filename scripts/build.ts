@@ -167,7 +167,9 @@ export async function main() {
 
   console.log("\nWrote Prover.toml ✨\n");
 
-  console.log("run:\n\n cd/circuits && nargo build\n\nto start execute proofs");
+  console.log(
+    "run:\n\n cd ./circuits && nargo build\n\nto start execute proofs"
+  );
 }
 
 main()

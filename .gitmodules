@@ -8,3 +8,6 @@
 	path = lib/zodiac
 	url = https://github.com/gnosis/zodiac
 	branch = v3.2.0
+[submodule "lib/safe-contracts"]
+	path = lib/safe-contracts
+	url = https://github.com/safe-global/safe-contracts
