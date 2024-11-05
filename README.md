@@ -17,3 +17,18 @@
 ```
 
 </details>
+
+## Setup
+
+```bash
+yarn && yarn build
+```
+
+## Run tests
+```bash
+yarn && yarn build
+
+cd circuits/ && nargo prove
+
+forge test
+```
