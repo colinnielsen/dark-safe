@@ -46,6 +46,8 @@
     "@noir-lang/barretenberg": "^2.19.0",
     "@noir-lang/noir_js": "^0.17.0",
     "@noir-lang/noir_wasm": "^0.10.0",
+    "@safe-global/protocol-kit": "^5.0.4",
+    "@safe-global/types-kit": "^1.0.0",
     "inquirer": "^8.0.0",
     "viem": "^1.10.14"
   }

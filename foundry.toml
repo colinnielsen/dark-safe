@@ -19,7 +19,7 @@ remappings = [
     "solady/=lib/safe-tools/lib/solady/src/"
 ]
 
-fs_permissions = [{ access = "read", path = "./contracts/inputs" }]
+fs_permissions = [{ access = "read", path = "./" }]
 
 
 # See more config options https://github.com/foundry-rs/foundry/tree/master/config

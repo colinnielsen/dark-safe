@@ -1,21 +1,22 @@
 import { Barretenberg, Fr } from "@aztec/bb.js";
 import { writeFileSync } from "fs";
 import { cpus } from "node:os";
-import { hashMessage, toHex } from "viem";
+import {
+  hashMessage,
+  Hex,
+  parseEther,
+  toHex
+} from "viem";
 import { PrivateKeyAccount } from "viem/accounts";
 import {
-  generateSafeMessage,
   hexToUint8Array,
   interpolatePolynomial,
   kChooseN,
-  print,
+  printDebug,
   validatePolynomialRoots,
 } from "./utils";
-import {
-  promptForMessage,
-  promptForSigners,
-  promptForThreshold,
-} from "./utils/inquirer";
+import { promptForSigners, promptForThreshold } from "./utils/inquirer";
+import { getSafeTransactionHash } from "./utils/safe";
 
 const MAX_SIGNERS = 8;
 
@@ -32,11 +33,15 @@ export async function main() {
   const signers: PrivateKeyAccount[] = await promptForSigners();
   // ask the user for the signing threshold of the safe
   const threshold: number = await promptForThreshold(signers.length);
-  // ask the user for a UTF-8 string they'd like to sign over
-  const safe_message_hash: string = await generateSafeMessage();
+  // get a message hash of sending 1 ether to alice
+  const safe_message_hash = getSafeTransactionHash({
+    to: "0x00000000000000000000000000000000000A11c3",
+    value: parseEther("1"),
+  }) as Hex;
 
-  print("Given a Threshold of: ", threshold);
-  print(
+  printDebug("Given the safe message hash", safe_message_hash);
+  printDebug("And a Threshold of: ", threshold);
+  printDebug(
     "And the following of signers: ",
     signers.map(({ address }) => address)
   );
@@ -46,14 +51,14 @@ export async function main() {
 
   // sum up all the unique combinations of addresses
   const combinations: bigint[] = kChooseN(addresses_bigInt, threshold);
-  print(
+  printDebug(
     "Yields the combinations: ",
     combinations.map((c) => `0x` + c.toString(16))
   );
 
   // the roots of a new polynomial will be all the unique combinations
   const roots = combinations;
-  print(
+  printDebug(
     "And roots: ",
     roots.map((c) => `0x` + c.toString(16))
   );
@@ -67,7 +72,7 @@ export async function main() {
       .concat(new Array(100).fill(0n))
       .slice(0, 71);
 
-  print(
+  printDebug(
     "And the polynomial",
     P.map((p) => p.toString(16))
   );
@@ -139,7 +144,9 @@ export async function main() {
       P.map((p) => `\t"0x${p.toString(16)}"`).join(",\n") + "\n"
     }]\n` +
       `polynomial_hash = "${polynomial_hash}"\n` +
-      `safe_message_hash = [${hexToUint8Array(safe_message_hash)}]\n` +
+      `safe_message_hash = [${hexToUint8Array(
+        hashMessage(safe_message_hash)
+      )}]\n` +
       `${pubKeyAndSignersWithEmpty
         .map(
           (v) =>
@@ -166,7 +173,7 @@ export async function main() {
   console.log("\nWrote Prover.toml ✨\n");
 
   console.log(
-    "\x1b[1m\x1b[32mrun:\n\n cd ./circuits && nargo build\n\n...to start executing proofs\x1b[0m"
+    "\x1b[1m\x1b[32mrun:\n\n cd ./circuits && nargo build && nargo prove\x1b[0m"
   );
 }
 

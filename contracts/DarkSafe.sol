@@ -4,12 +4,15 @@ pragma solidity 0.8.27;
 import {Module, Enum as ZodiacEnum} from "zodiac/core/Module.sol";
 import {Safe, Enum as SafeEnum} from "safe-contracts/Safe.sol";
 import {DarkSafeVerifier} from "./Verifier.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 contract DarkSafe is Module {
     /// @notice the hash of the polynomial
     bytes32 public polynomialHash;
     DarkSafeVerifier public immutable verifier;
     bool public isMasterCopy;
+
+    using LibString for bytes;
 
     error PROOF_VERIFICATION_FAILED();
     error CANNOT_SETUP_MASTER_COPY();
@@ -18,12 +21,7 @@ contract DarkSafe is Module {
     ///     decentralize the polynomial for later proof generation
     event SignersRotated(bytes32 indexed polynomialHash, bytes32[] polynomial);
 
-    constructor(
-        address _safe,
-        bytes32 _polynomialHash,
-        bytes32[] memory _polynomial,
-        DarkSafeVerifier _verifier
-    ) {
+    constructor(address _safe, bytes32 _polynomialHash, bytes32[] memory _polynomial, DarkSafeVerifier _verifier) {
         setUp(abi.encode(_safe, _polynomialHash, _polynomial));
         verifier = _verifier;
         isMasterCopy = true;
@@ -59,12 +57,19 @@ contract DarkSafe is Module {
         returns (bool success, bytes memory returnData)
     {
         Safe safe = Safe(payable(address(avatar)));
-        bytes32 safeTxHash =
-            safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), safe.nonce());
+        uint256 nonce = safe.nonce();
+        bytes32 safeTxHash = safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), nonce);
+        bytes32 messageHash = keccak256(
+            (bytes.concat("\x19Ethereum Signed Message:\n", "66", bytes(abi.encode(safeTxHash).toHexString())))
+        );
 
-        bytes32[] memory publicInputs = new bytes32[](2);
-        publicInputs[0] = safeTxHash;
-        publicInputs[1] = polynomialHash;
+        bytes32[] memory publicInputs = new bytes32[](33);
+        for (uint256 i; i < 32; ++i) {
+            uint256 shift = 248 - i * 8;
+            publicInputs[i] = bytes32(uint256(uint8(uint256(messageHash) >> shift)));
+        }
+
+        publicInputs[32] = polynomialHash;
 
         if (verifier.verify(proof, publicInputs) == false) revert PROOF_VERIFICATION_FAILED();
 

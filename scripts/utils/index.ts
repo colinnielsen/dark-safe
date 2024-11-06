@@ -21,7 +21,7 @@ export const DEFAULT_SIGNERS = DEFAULT_SIGNERS_PK.map((pk) =>
 
 const DEBUG = process.argv.includes("--debug");
 
-export const print = (...args: any) => {
+export const printDebug = (...args: any) => {
   if (DEBUG) console.log(args);
 };
 
@@ -87,16 +87,13 @@ export const hexToUint8Array = (hex: string) =>
 export function validatePolynomialRoots(polynomial: bigint[], roots: bigint[]) {
   roots.forEach((root, i) => {
     const result = evauluatePolynomial(polynomial, root);
-    print({ x: root.toString(16), result });
-    
-    if (result !== 0n) throw new Error(
-      `Evaluation of root at index ${i} did not constrain to 0!\nResult: ${result}`
-    );
-    
-    print(`f(x) @ index: ${i} = ${result}`);
+    printDebug({ x: root.toString(16), result });
+
+    if (result !== 0n)
+      throw new Error(
+        `Evaluation of root at index ${i} did not constrain to 0!\nResult: ${result}`
+      );
+
+    printDebug(`f(x) @ index: ${i} = ${result}`);
   });
 }
-
-export const generateSafeMessage = () => {
-  return hashMessage("Hello, world!");
-};

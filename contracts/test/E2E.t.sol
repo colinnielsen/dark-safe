@@ -39,6 +39,10 @@ contract DarkSafeTest is Test, SafeTestTools {
         return abi.decode(data, (PolynomialJSON));
     }
 
+    function _loadProof() internal view returns (bytes memory proof) {
+        return vm.parseBytes(vm.readFile("circuits/proofs/dark_safe.proof"));
+    }
+
     function _setupDarkSafe(PolynomialJSON memory polynomialInput) internal returns (DarkSafe) {
         // setup the safe
         uint256[] memory ownerPKs = new uint256[](1);
@@ -87,9 +91,16 @@ contract DarkSafeTest is Test, SafeTestTools {
         // get the polynomial
         (PolynomialJSON memory polynomialInput) = _getPolynomialInput();
 
+        // set up the safe
         DarkSafe darkSafe = _setupDarkSafe(polynomialInput);
 
         // check the polynomial hash was saved
         assertEq(darkSafe.polynomialHash(), polynomialInput.polynomial_hash);
+
+        bytes memory proof = _loadProof();
+
+        darkSafe.exec({to: address(0xA11c3), value: 1 ether, data: "", operation: Enum.Operation.Call, proof: proof});
+
+        assertEq(address(0xA11c3).balance, 1 ether);
     }
 }
