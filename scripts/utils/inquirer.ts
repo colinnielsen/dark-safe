@@ -1,11 +1,35 @@
 import inquirer from "inquirer";
+import { parseArgs } from "node:util";
 import { PrivateKeyAccount } from "viem/accounts";
 import { DEFAULT_SIGNERS } from ".";
 
-// Define and export getSigners, getThreshold, getMessage functions here
+function parseCliArgs() {
+  const args = parseArgs({
+    options: {
+      signers: { type: "string" },
+      threshold: { type: "string" },
+    },
+  });
 
-// Rename and export getSigners to promptForSigners
+  return {
+    signerCount: args.values.signers ? parseInt(args.values.signers as string) : undefined,
+    threshold: args.values.threshold ? parseInt(args.values.threshold as string) : undefined,
+  };
+}
+
 export async function promptForSigners(): Promise<PrivateKeyAccount[]> {
+  const { signerCount } = parseCliArgs();
+
+  if (signerCount) {
+    if (signerCount < 2) 
+      throw new Error("Must select at least two signers");
+    
+    if (signerCount > DEFAULT_SIGNERS.length)
+      throw new Error(`Cannot select more than ${DEFAULT_SIGNERS.length} signers`);
+    
+    return DEFAULT_SIGNERS.slice(0, signerCount);
+  }
+
   return inquirer
     .prompt({
       message: "Select signers",
@@ -26,10 +50,19 @@ export async function promptForSigners(): Promise<PrivateKeyAccount[]> {
     });
 }
 
-// Rename and export getThreshold to promptForThreshold
-export async function promptForThreshold(
-  signersCount: number
-): Promise<number> {
+export async function promptForThreshold(signersCount: number): Promise<number> {
+  const { threshold } = parseCliArgs();
+
+  if (threshold !== undefined) {
+    if (threshold === 0) 
+      throw new Error("Threshold must be greater than 0");
+    
+    if (threshold > signersCount)
+      throw new Error("Threshold is greater than signer count");
+    
+    return threshold;
+  }
+
   return inquirer
     .prompt({
       message: "Enter a signing threshold",
@@ -40,12 +73,10 @@ export async function promptForThreshold(
       if (threshold === 0) throw new Error("Threshold must be greater than 0");
       if (threshold > signersCount)
         throw new Error("Threshold is greater than signer count");
-
       return threshold;
     });
 }
 
-// Rename and export getMessage to promptForMessage
 export async function promptForMessage(): Promise<string> {
   return inquirer
     .prompt({
