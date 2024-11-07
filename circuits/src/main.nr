@@ -21,7 +21,7 @@ fn main(
     signature_data: [PubKeyAndSigs; lib::MAX_SIGNER_COUNT],
     safe_message_hash: pub [u8; 32],
     polynomial: [Field; lib::MAX_POLYNOMIAL_DEGREE],
-    polynomial_commitment: pub Field
+    polynomial_hash: pub Field
 ) {
     let mut combination: Field = 0;
 
@@ -41,16 +41,8 @@ fn main(
         }
     }
 
-    // scalar mul the combination by the generator
-    //      this makes the combinations non brute-forcable
-    let (low, high) = bn254::decompose(combination);
-    let root = fixed_base_embedded_curve(low, high)[0];
-
-    // check it's a root of a polynomial
-    assert(lib::evaluate_polynomial(polynomial, root) == 0);
-
-    // check the polynomial matches the public polynomial commitment
-    let out = std::hash::pedersen_commitment(polynomial).x;
-
-    assert(out == polynomial_commitment);
+    // check if the combination is a root of the polynomial
+    assert(lib::evaluate_polynomial(polynomial, combination) == 0);
+    // check the polynomial matches the public polynomial hash
+    assert(std::hash::pedersen_commitment(polynomial).x == polynomial_hash);
 }

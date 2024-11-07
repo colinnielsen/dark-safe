@@ -1,42 +1,55 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity >=0.8.19;
+pragma solidity 0.8.27;
 
 import {Module, Enum as ZodiacEnum} from "zodiac/core/Module.sol";
 import {Safe, Enum as SafeEnum} from "safe-contracts/Safe.sol";
-import {UltraVerifier} from "./Verifier.sol";
+import {DarkSafeVerifier} from "./Verifier.sol";
+import {LibString} from "solady/utils/LibString.sol";
 
 contract DarkSafe is Module {
     /// @notice the hash of the polynomial
-    bytes32 public polynomialCommitment;
-    UltraVerifier verifier = new UltraVerifier();
+    bytes32 public polynomialHash;
+    DarkSafeVerifier public immutable verifier;
+    bool public isMasterCopy;
+
+    using LibString for bytes;
 
     error PROOF_VERIFICATION_FAILED();
+    error CANNOT_SETUP_MASTER_COPY();
 
-    /// @dev emit the polynomial commitiment and the polynomial as an easy way to
+    /// @dev emit the polynomial hash and the polynomial as an easy way to
     ///     decentralize the polynomial for later proof generation
-    event SignersRotated(bytes32 indexed polynomialCommitment, bytes32[] polynomial);
+    event SignersRotated(bytes32 indexed polynomialHash, bytes32[] polynomial);
 
-    constructor(address _safe, bytes32 _polynomialCommitiment) {
-        setUp(abi.encode(_safe, _polynomialCommitiment));
+    constructor(address _safe, bytes32 _polynomialHash, bytes32[] memory _polynomial, DarkSafeVerifier _verifier) {
+        setUp(abi.encode(_safe, _polynomialHash, _polynomial));
+        verifier = _verifier;
+        isMasterCopy = true;
     }
 
     /// @dev a setup function to ensure factory friendly compatibility
     function setUp(bytes memory initializeParams) public override initializer {
-        (address _safe, bytes32 _polynomialCommitiment) = abi.decode(initializeParams, (address, bytes32));
+        if (isMasterCopy) revert CANNOT_SETUP_MASTER_COPY();
+        (address _safe, bytes32 _polynomialHash, bytes32[] memory _polynomial) =
+            abi.decode(initializeParams, (address, bytes32, bytes32[]));
 
         __Ownable_init();
         setAvatar(_safe);
         setTarget(_safe);
         transferOwnership(_safe);
 
-        polynomialCommitment = _polynomialCommitiment;
+        _updateSigners(_polynomialHash, _polynomial);
     }
 
-    /// @dev updates polynomialCommitiment, thus changing the valid signer sets
-    function updateSigners(bytes32 newCommitiment, bytes32[] memory polynomial) public onlyOwner {
-        polynomialCommitment = newCommitiment;
+    /// @dev updates polynomialHash, thus changing the valid signer sets
+    function _updateSigners(bytes32 newHash, bytes32[] memory polynomial) internal {
+        polynomialHash = newHash;
 
-        emit SignersRotated(newCommitiment, polynomial);
+        emit SignersRotated(newHash, polynomial);
+    }
+
+    function updateSigners(bytes32 newHash, bytes32[] memory polynomial) external onlyOwner {
+        _updateSigners(newHash, polynomial);
     }
 
     function _execute(address to, uint256 value, bytes calldata data, SafeEnum.Operation operation, bytes memory proof)
@@ -44,12 +57,19 @@ contract DarkSafe is Module {
         returns (bool success, bytes memory returnData)
     {
         Safe safe = Safe(payable(address(avatar)));
-        bytes32 safeTxHash =
-            safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), safe.nonce());
+        uint256 nonce = safe.nonce();
+        bytes32 safeTxHash = safe.getTransactionHash(to, value, data, operation, 0, 0, 0, address(0), payable(0), nonce);
+        bytes32 messageHash = keccak256(
+            (bytes.concat("\x19Ethereum Signed Message:\n", "66", bytes(abi.encode(safeTxHash).toHexString())))
+        );
 
-        bytes32[] memory publicInputs = new bytes32[](2);
-        publicInputs[0] = safeTxHash;
-        publicInputs[1] = polynomialCommitment;
+        bytes32[] memory publicInputs = new bytes32[](33);
+        for (uint256 i; i < 32; ++i) {
+            uint256 shift = 248 - i * 8;
+            publicInputs[i] = bytes32(uint256(uint8(uint256(messageHash) >> shift)));
+        }
+
+        publicInputs[32] = polynomialHash;
 
         if (verifier.verify(proof, publicInputs) == false) revert PROOF_VERIFICATION_FAILED();
 
