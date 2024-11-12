@@ -71,7 +71,7 @@ contract DarkSafeTest is Test, SafeTestTools {
         );
 
         // expect the signers rotated event to be emitted
-        vm.expectEmit(true, true, true, true);
+        vm.expectEmit();
         emit DarkSafe.SignersRotated(polynomialInput.polynomial_hash, polynomialInput.polynomial);
 
         // deploy a new module proxy off the master copy
