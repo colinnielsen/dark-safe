@@ -54,6 +54,14 @@ Polynomial = x^4 + 145x^3 + 9x^2 + x + 42
 # (implied) (1x^4)             (1x^1) (42x^0)
 ```
 
+This polynomial represents all the valid combinations of the signers.
+
+Just like Safe, it protects against:
+
+- double signing
+- under signing
+- non-signer signatures
+
 ## A TLDR Of How It works
 
 ### 👷🏽‍♂️ Setup
