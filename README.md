@@ -1,6 +1,18 @@
-# Safe Multisig (but signers are secret)
+# 🥷🏽 Dark Safe 🏦
 
 ## Deep Dive Video 📺
+
+<div align="center">
+  <iframe
+    width="560"
+    height="315"
+    src="https://youtu.be/7GUZNb0jpDE"
+    title="Dark Safe Demo"
+    frameborder="0"
+    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+    allowfullscreen
+  ></iframe>
+</div>
 
 <details>
 <summary>Repo Structure</summary>
