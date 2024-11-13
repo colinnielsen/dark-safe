@@ -42,7 +42,7 @@ Using this project as a research playground, I wanted to find an _~ elegant ~_ d
 
 ### Solution
 
-Thanks to some great help from @autoparallel and @0x_jepsen, I ended up representing valid signer sets (including signing threshold) into a polynomial.
+Thanks to some great help from [@autoparallel](https://github.com/autoparallel) and [@0xjepsen](https://github.com/0xjepsen), I ended up representing valid signer sets (including signing threshold) into a polynomial.
 
 This polynomial is [emitted in an event onchain](contracts/DarkSafe.sol#L48) as a _reverse_ encoded array, of 32 byte coefficiencts, with the array index representing the degree of the `x` value's exponent. For example:
 
@@ -103,6 +103,8 @@ forge test
 
 ## Notes
 
+- Check out [DRY](https://github.com/dry-ethglobal-brussels/dry-mobile-app) - a cool merkle tree implementation with FaceID by some noir OGs
+
 - This project is just for fun, demonstrating a relatively efficient and elegant usecase for Noir and shouldn't be used in production unless we work together on this and get it audited
 
 - Interpolating a polynomial over the K choose N of the signer set is _not_ secure enough for me to be comfortable. It is not impossible to brute force k choose n up to 8 over all the Ethereum addresses and compute f(x) to try and brute-force find out who's on the safe.
@@ -111,3 +113,15 @@ Some possible solutions are:
 
 - Always spin up a fresh EOA to add as a signer, it's important this account has never made an Ethereum transaction on any chain.
 - Refactor the code to accept a bit of randomness: an `r` value to hash together with each `root`. This makes it impossible to brute force. The `r` value can be as simple as a known `password` has to at least be known by the prover.
+
+
+## Massive Thanks to...
+the boiz
+- [@autoparallel](https://github.com/autoparallel)
+- [@0xjepsen](https://github.com/0xjepsen)
+
+noir guys
+- [@TomAFrench](https://github.com/TomAFrench)
+- [@kevaundray](https://github.com/kevaundray)
+- [@signorecello](https://github.com/signorecello)
+- [@critesjosh](https://github.com/critesjosh)
