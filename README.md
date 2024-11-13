@@ -73,12 +73,12 @@ Just like Safe, it protects against:
 2. [`K choose N`](scripts/build.ts#L53) over the signer set and the threshold to find all possible _additive_ combinations of the Ethereum addresses (remember, an eth address is just a number, so you can use addition to express a combination of multiple addresses).
 3. Consider those combinations as ["roots"](scripts/build.ts#L60) and [Lagrange Interpolate](scripts/build.ts#L68) a polynomial that passes through all those points where `y=0`.
 4. Take the [Pedersen hash](scripts/build.ts#L137) of the polynomial as a suscinct commitment to the polynomial.
-5. Deploy a new instance of [DarkSafe](contracts/DarkSafe.sol#L31), via the [ModuleProxyFactory](lib/zodiac/contracts/factory/ModuleProxyFactory.sol#L40) passing the `polynomialHash` and the `polynomial` as initialization params.
+5. Deploy a new instance of [DarkSafe](contracts/DarkSafe.sol#L31), via the [ModuleProxyFactory](https://github.com/gnosisguild/zodiac/blob/master/contracts/factory/ModuleProxyFactory.sol#L40) passing the `polynomialHash` and the `polynomial` as initialization params.
    - The contract will emit the `polynomial` and `polynomialHash` in a `SignersRotated()` event as decentralized, succinct data stucture to represent the signer set and threshold.
 
 ### ✍️ Signing
 
-1. Sign over a [SafeMessageHash](lib/safe-contracts/contracts/Safe.sol#L427) with an EOA Private Key (via `eth_personalSign`).
+1. Sign over a [SafeMessageHash](https://github.com/safe-global/safe-contracts/blob/master/contracts/Safe.sol#L392) with an EOA Private Key (via `eth_personalSign`).
 2. Pass your signature to the next signer.
 3. Repeat steps 1+2 until a valid signer until a valid proof can be generated via the Noir circuit.
    - This keeps other signers anonymous on a "need-to-know" basis. In other words, not all signers need to be known at proof generation.
