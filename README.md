@@ -24,7 +24,7 @@
 
 ## What
 
-A zodiac-compatible [Safe](https://app.safe.global) module that shields the ethereum addresses of up to 8 authorized "dark signers".
+A zodiac-compatible [Safe](https://safe.global) module that shields the ethereum addresses of up to 8 authorized "dark signers".
 
 ## Background
 
