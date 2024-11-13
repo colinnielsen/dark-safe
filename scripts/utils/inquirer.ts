@@ -8,6 +8,7 @@ function parseCliArgs() {
     options: {
       signers: { type: "string" },
       threshold: { type: "string" },
+      debug: { type: "boolean" },
     },
   });
 
