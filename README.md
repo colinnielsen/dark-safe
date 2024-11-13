@@ -2,17 +2,7 @@
 
 ## Deep Dive Video 📺
 
-<div align="center">
-  <iframe
-    width="560"
-    height="315"
-    src="https://youtu.be/7GUZNb0jpDE"
-    title="Dark Safe Demo"
-    frameborder="0"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-    allowfullscreen
-  ></iframe>
-</div>
+[![deep dive video](https://img.youtube.com/vi/7GUZNb0jpDE/0.jpg)](https://www.youtube.com/watch?v=7GUZNb0jpDE)
 
 <details>
 <summary>Repo Structure</summary>
