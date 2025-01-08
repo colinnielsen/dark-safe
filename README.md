@@ -126,5 +126,5 @@ noir guys
 - [@signorecello](https://github.com/signorecello)
 - [@critesjosh](https://github.com/critesjosh)
 
-and [Dave Pasirstein]([dpasirst](https://github.com/dpasirst)) who said that fateful day "hey I think you need to be looking into polynomials" - many thanks, Dave
+and [Dave Pasirstein](https://github.com/dpasirst) who said that fateful day "hey I think you need to be looking into polynomials" - many thanks, Dave
 
